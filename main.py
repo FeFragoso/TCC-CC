@@ -1,5 +1,7 @@
 import cv2
 import math
+import time
+import datetime
 from flask import Flask, render_template, Response
 from flask_socketio import SocketIO
 from ultralytics import YOLO
@@ -26,7 +28,9 @@ def processa_imagem(input):
 
     model = YOLO('best.pt')
 
-    classNames = ['Excavator', 'Gloves', 'Hardhat', 'Ladder', 'Mask', 'NO-Hardhat', 'NO-Mask', 'NO-Safety Vest', 'Person', 'SUV', 'Safety Cone', 'Safety Vest', 'bus', 'dump truck', 'fire hydrant', 'machinery', 'mini-van', 'sedan', 'semi', 'trailer', 'truck and trailer', 'truck', 'van', 'vehicle', 'wheel loader']
+    classNames = ['Excavator', 'Gloves', 'Hardhat', 'Ladder', 'Mask', 'Sem Capacete', 'NO-Mask', 'NO-Safety Vest', 'Person', 'SUV', 'Safety Cone', 'Safety Vest', 'bus', 'dump truck', 'fire hydrant', 'machinery', 'mini-van', 'sedan', 'semi', 'trailer', 'truck and trailer', 'truck', 'van', 'vehicle', 'wheel loader']
+
+    tempo_inicial = time.time()
 
     while True:
         success, img = frame.read()
@@ -49,8 +53,11 @@ def processa_imagem(input):
                 label = f'{class_name}{conf}'
                 t_size = cv2.getTextSize(label, 0, fontScale=1, thickness=2)[0]
 
-                if (cls == 5):
-                    notificacao(classNames[cls])
+                tempo_atual = time.time()
+                if (tempo_atual - tempo_inicial >= 10):
+                    if (cls == 5):
+                        notificacao(classNames[cls] + ' | ' + datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
+                    tempo_inicial = tempo_atual
 
                 c2 = x1 + t_size[0], y1 - t_size[1] - 3
                 cv2.rectangle(img, (x1, y1), c2, [255, 0, 255], -1, cv2.LINE_AA)
@@ -71,4 +78,4 @@ def notificacao(evento):
     socketio.emit('evento', evento)
 
 if __name__ == "__main__":
-    socketio.run(app,allow_unsafe_werkzeug=True, debug=True, host='192.168.100.209', port=80)
+    socketio.run(app, allow_unsafe_werkzeug=True, debug=True, host='192.168.100.209', port=80)

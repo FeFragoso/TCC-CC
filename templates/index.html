@@ -36,15 +36,14 @@
         "
     >
 
-        <p id="buteta"></p>
+        <p id="buteta" style="white-space: pre-line;"></p>
 
         <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.3.1/socket.io.js"></script>
         <script>
             var socket = io.connect('http://' + document.domain + ':' + location.port);
 
             socket.on('evento', function (data) {
-                console.log(data)
-                document.getElementById('buteta').innerHTML = data;
+                document.getElementById('buteta').textContent += '\n' + data;
             });
         </script>
 
