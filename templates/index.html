@@ -1,0 +1,53 @@
+<style>
+    *
+    {
+        padding: 0;
+        margin: 0;
+    }
+</style>
+
+<body
+    style="
+        width: 100vw;
+        height: 100vh;
+
+        overflow: hidden;
+
+        display:grid;
+        grid-template-columns: 60% 40%;
+
+        background-color: #012;
+    "
+>
+
+    <div
+        style="
+            margin: 1rem;
+        "
+    >
+        <img src="{{ url_for('webcam') }}">
+    </div>
+
+    <div
+        style="
+            margin: 1rem;
+
+            background-color: #eee;
+        "
+    >
+
+        <p id="buteta"></p>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.3.1/socket.io.js"></script>
+        <script>
+            var socket = io.connect('http://' + document.domain + ':' + location.port);
+
+            socket.on('evento', function (data) {
+                console.log(data)
+                document.getElementById('buteta').innerHTML = data;
+            });
+        </script>
+
+    </div>
+
+</body>
