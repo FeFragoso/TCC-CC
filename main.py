@@ -6,8 +6,6 @@ from flask import Flask, render_template, Response
 from flask_socketio import SocketIO
 from ultralytics import YOLO
 
-#webcam = model.predict(source='0', show=True)
-
 app = Flask(__name__)
 socketio = SocketIO(app)
 
@@ -28,7 +26,7 @@ def processa_imagem(input):
 
     model = YOLO('best.pt')
 
-    classNames = ['Excavator', 'Gloves', 'Hardhat', 'Ladder', 'Mask', 'Sem Capacete', 'NO-Mask', 'NO-Safety Vest', 'Person', 'SUV', 'Safety Cone', 'Safety Vest', 'bus', 'dump truck', 'fire hydrant', 'machinery', 'mini-van', 'sedan', 'semi', 'trailer', 'truck and trailer', 'truck', 'van', 'vehicle', 'wheel loader']
+    classNames = ['Excavator', 'Gloves', 'Com Capacete', 'Ladder', 'Com Mascara', 'Sem Capacete', 'Sem Mascara', 'Sem Colete', 'Pessoa', 'SUV', 'Safety Cone', 'Com Colete', 'bus', 'dump truck', 'fire hydrant', 'machinery', 'mini-van', 'sedan', 'semi', 'trailer', 'truck and trailer', 'truck', 'van', 'vehicle', 'wheel loader']
 
     tempo_inicial = time.time()
 
@@ -44,26 +42,25 @@ def processa_imagem(input):
                 x1, y1, x2, y2 = box.xyxy[0]
                 x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
 
-                #print(x1, y1, x2, y2)
-
-                cv2.rectangle(img, (x1, y1), (x2, y2), (255, 0, 255), 3)
+                cv2.rectangle(img, (x1, y1), (x2, y2), (102, 119, 136), 3)
                 conf = math.ceil((box.conf[0]*100))/100
                 cls = int(box.cls[0])
                 class_name = classNames[cls]
-                label = f'{class_name}{conf}'
+                label = f'{class_name}'
                 t_size = cv2.getTextSize(label, 0, fontScale=1, thickness=2)[0]
 
-                tempo_atual = time.time()
-                if (tempo_atual - tempo_inicial >= 10):
-                    if (cls == 5):
-                        notificacao(classNames[cls] + ' | ' + datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
-                    tempo_inicial = tempo_atual
+                if (cls == 5):
+                    notificacao([classNames[cls], datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"), '#fbb'])
+                elif (cls == 7):
+                    notificacao([classNames[cls], datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"), '#ffb'])
 
                 c2 = x1 + t_size[0], y1 - t_size[1] - 3
-                cv2.rectangle(img, (x1, y1), c2, [255, 0, 255], -1, cv2.LINE_AA)
+                cv2.rectangle(img, (x1, y1), c2, [102, 119, 136], -1, cv2.LINE_AA)
                 cv2.putText(img, label, (x1, y1 - 2), 0, 1, [255, 255, 255], thickness=1, lineType=cv2.LINE_AA)
 
         yield img
+
+        time.sleep(0.33)
 
 
 @app.route('/')
@@ -78,4 +75,4 @@ def notificacao(evento):
     socketio.emit('evento', evento)
 
 if __name__ == "__main__":
-    socketio.run(app, allow_unsafe_werkzeug=True, debug=True, host='192.168.100.209', port=80)
+    socketio.run(app, allow_unsafe_werkzeug=True, debug=True)
